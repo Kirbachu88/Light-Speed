@@ -2,11 +2,17 @@ import RPi.GPIO as GPIO
 import time
 import signal
 import sys
+import random
 
 game_mode = -2
+round_time = 0.0
 player_count = 0
+
 p1_time = 0.0
+p1_wins = 0
+
 p2_time = 0.0
+p2_wins = 0
 
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
@@ -80,11 +86,55 @@ def Players():
 
 def Single():
     print("Single-Player game")
-    exit()
+    Reset()
+    
+    global p1_time
+    global round_time
+    tempo = random.uniform(1, 3)
+    
+    time.sleep(1)
+    print("Get ready...")
+    
+    GPIO.output(red, True)
+    time.sleep(tempo)
+    GPIO.output(yellow, True)
+    time.sleep(tempo)
+    GPIO.output(green, True)
+    round_time = time.time()
+    
+    time.sleep(2)
+    
+    print(f'P1 Time: {p1_time - round_time}')
+
+    p1_time = 0.0
 
 def Versus():
     print("Versus game")
-    exit()
+    Reset()
+    
+    global p1_time
+    global p2_time
+    global round_time
+    round_time = time.time()
+    tempo = random.uniform(1, 3)
+    
+    time.sleep(1)
+    print("Get ready...")
+    
+    GPIO.output(red, True)
+    time.sleep(tempo)
+    GPIO.output(yellow, True)
+    time.sleep(tempo)
+    GPIO.output(green, True)
+    round_time = time.time()
+    
+    time.sleep(2)
+    
+    print(f'P1 Time: {p1_time - round_time}')
+    print(f'P2 Time: {p2_time - round_time}')
+    
+    p1_time = 0.0
+    p2_time = 0.0
 
 def signal_handler(signal, frame):
     GPIO.cleanup()
@@ -104,7 +154,6 @@ def p1_button_pressed_callback(channel):
     if (game_mode == 1 or game_mode == 2) and (p1_time == 0.0):
         print("Player 1 Action")
         p1_time = time.time()
-        print(f'P1 Time elapsed since start: {p1_time - test_time}')
     
 def p2_button_pressed_callback(channel):
     global p2_time
@@ -122,15 +171,16 @@ def p2_button_pressed_callback(channel):
     if (game_mode == 2) and (p2_time == 0.0):
         print("Player 2 Action")
         p2_time = time.time()
-        print(f'P2 Time elapsed since start: {p2_time - test_time}')
 
 GPIO.add_event_detect(p1_button, GPIO.FALLING, callback=p1_button_pressed_callback, bouncetime=200)
 GPIO.add_event_detect(p2_button, GPIO.FALLING, callback=p2_button_pressed_callback, bouncetime=200)
 
 Reset()
-test_time = time.time()
 
 print("Waiting for players...")
+print("When the game begins, watch how long it takes for each light to turn on.")
+print("Press the button when it reaches green, but not too soon!")
+print("Try to get the fastest time on your own or against another!")
 
 while True:
     if game_mode == -2:
