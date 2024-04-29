@@ -119,10 +119,24 @@ def Single():
     if (p1_result > 0.0) and (p1_result < best_time):
         print("NEW BEST TIME:")
         best_time = p1_result
+        print(f'{best_time}')
+        GPIO.output(p1_LED, True)
+        time.sleep(0.5)
+        GPIO.output(p1_LED, False)
+        time.sleep(0.5)
+        GPIO.output(p1_LED, True)
+        time.sleep(0.5)
+        GPIO.output(p1_LED, False)
+        time.sleep(0.5)
+        GPIO.output(p1_LED, True)
+        time.sleep(0.5)
+        GPIO.output(p1_LED, False)
+        time.sleep(0.5)
+        GPIO.output(p1_LED, True)
+        time.sleep(1)
     else:
         print("Best time:")
-        
-    print(f'{best_time}')
+        print(f'{best_time}')
     
     time.sleep(3)
 
