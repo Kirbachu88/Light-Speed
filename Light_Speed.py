@@ -3,7 +3,7 @@ import time
 import signal
 import sys
 
-game_mode = 0
+game_mode = -2
 player_count = 0
 
 GPIO.setwarnings(False)
@@ -32,25 +32,32 @@ def Test():
     time.sleep(1)
     GPIO.output(red, False)
     time.sleep(1)
-    
+
+def Reset():
+    for led in outputLEDs:
+        GPIO.output(led, False)
+
 def Standby():
     GPIO.output(red, True)
     time.sleep(0.5)
     GPIO.output(red, False)
-    if game_mode != 0:
+    if game_mode != -2:
         return
     GPIO.output(yellow, True)
     time.sleep(0.5)
     GPIO.output(yellow, False)
-    if game_mode != 0:
+    if game_mode != -2:
         return
     GPIO.output(green, True)
     time.sleep(0.5)
     GPIO.output(green, False)
-    if game_mode != 0:
+    if game_mode != -2:
         return
 
 def Players():
+    global game_mode
+    global player_count
+    
     GPIO.output(red, False)
     GPIO.output(yellow, False)
     GPIO.output(green, False)
@@ -63,22 +70,22 @@ def Players():
     GPIO.output(yellow, False)
     GPIO.output(red, True)
     
-    print(f'Players: {player_count}')
-    time.sleep(2)
+    print(f'Game Mode: {player_count}-Player')
     game_mode = player_count
+    time.sleep(2)
+
+def Single():
+    print("Single-Player game")
+    exit()
+
+def Versus():
+    print("Versus game")
+    exit()
 
 def signal_handler(signal, frame):
     GPIO.cleanup()
     sys.exit(0)
-    
-def button_pressed_callback(channel):
-    global game_mode
-    global player_count
-    
-    if game_mode == 0:
-        game_mode = 1
-        player_count += 1
-        
+       
 def p1_button_pressed_callback(channel):
     global p1_time
     print("Player 1 Press")
@@ -86,9 +93,10 @@ def p1_button_pressed_callback(channel):
     global game_mode
     global player_count
     
-    if game_mode == 0:
-        game_mode = 1
-        player_count += 1
+    if game_mode == -2:
+        GPIO.output(p1_LED, True)
+        game_mode = -1
+        player_count = 1
     
 def p2_button_pressed_callback(channel):
     global p2_time
@@ -97,15 +105,21 @@ def p2_button_pressed_callback(channel):
     global game_mode
     global player_count
     
-    if game_mode == 0:
-        game_mode = 1
-        player_count += 1
+    if game_mode == -1:
+        GPIO.output(p2_LED, True)
+        player_count = 2
 
 GPIO.add_event_detect(p1_button, GPIO.FALLING, callback=p1_button_pressed_callback, bouncetime=200)
 GPIO.add_event_detect(p2_button, GPIO.FALLING, callback=p2_button_pressed_callback, bouncetime=200)
 
+Reset()
+
 while True:
-    if game_mode == 0:
+    if game_mode == -2:
         Standby()
-    else:
+    elif game_mode == -1:
         Players()
+    elif game_mode == 1:
+        Single()
+    elif game_mode == 2:
+        Versus()
